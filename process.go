@@ -10,7 +10,24 @@ import (
     "regexp"
 )
 
+func changeString(instr string) string{
+  str := strings.SplitAfter(instr, ",")
+  new := str[0]
 
+  for i := 1; i < len(str); i++ {
+    re := regexp.MustCompile(`^[a-zA-Z]`)
+    re1 := regexp.MustCompile(`[a-zA-Z],$`)
+    re2 := regexp.MustCompile(`^\s`)
+
+    if (re.FindString(str[i]) != "" || re1.FindString(str[i-1]) != "" && re2.FindString(str[i]) == ""){
+      new += " " + str[i]
+    } else {
+      new += str[i]
+    }
+  }
+
+  return new
+}
 
 func changeFile(indir, outdir, file_name string, c chan int){
   infile, err := os.Open(indir + "/" + file_name)
@@ -33,7 +50,7 @@ func changeFile(indir, outdir, file_name string, c chan int){
       text = string(data[:n])
     }
 
-    res := ""
+    res := changeString(text)
 
   outfile_name := strings.Split(file_name, ".")[0] + ".res"
   //fmt.Println(outfile_name)
