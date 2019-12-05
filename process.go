@@ -39,8 +39,7 @@ func changeFile(indir, outdir, file_name string, c chan int){
 
       defer infile.Close()
 
-    fi, _ := infile.Stat()
-    data := make([]byte, fi.Size())
+    data := make([]byte, 64)
     text := ""
 
     for{
@@ -48,7 +47,7 @@ func changeFile(indir, outdir, file_name string, c chan int){
         if err == io.EOF{
             break
         }
-      text = string(data[:n])
+      text += string(data[:n])
     }
 
     res := changeString(text)
