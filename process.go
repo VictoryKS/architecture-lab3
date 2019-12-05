@@ -39,7 +39,8 @@ func changeFile(indir, outdir, file_name string, c chan int){
 
       defer infile.Close()
 
-    data := make([]byte, 64)
+    fi, _ := infile.Stat()
+    data := make([]byte, fi.Size())
     text := ""
 
     for{
