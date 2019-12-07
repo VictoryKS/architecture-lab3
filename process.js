@@ -32,17 +32,17 @@ function correction(folderDir, resDir) {
     .filter(fileName => fileName.endsWith('.txt'));
 
   for (let file of files) {
-    fs.readFile(folderDir + '/' + file, 'utf8', (err, data) => {
-      if (err) throw err;
-
-      const result = correctText(data);
-      if (result) {
-        const resFile = resDir + '/' + file.substring(0, file.indexOf('.txt')) + '.res';
-        fs.writeFile(resFile, result, (err) => {
-          if (err) throw err;
-        })
-      }
-    });
+    let result = '';
+    const stream = fs.createReadStream(folderDir + '/' + file)
+      .on('data', (data) => result += correctText(data))
+      .on('end', () => {
+        if (result) {
+          const resFile = resDir + '/' + file.substring(0, file.indexOf('.txt')) + '.res';
+          fs.writeFile(resFile, result, (err) => {
+            if (err) throw err;
+          })
+        }
+      });
   }
   console.log('Total number of processed files: ' + files.length);
 }
