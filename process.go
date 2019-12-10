@@ -39,41 +39,38 @@ func changeFile(indir, outdir, file_name string, c chan int){
 
       defer infile.Close()
 
-    data := make([]byte, 64)
-    text := ""
+      outfile_name := strings.Split(file_name, ".")[0] + ".res"
+      //fmt.Println(outfile_name)
 
+      if _, err := os.Stat(outdir); os.IsNotExist(err) {
+        err = os.MkdirAll(outdir, 0755)
+        if err != nil {
+          log.Fatal(err)
+          c <- -1
+          os.Exit(1)
+        }
+      }
+
+      outfile, err := os.Create(outdir + "/" + outfile_name)
+      if err != nil{
+            log.Fatal(err)
+            c <- -1
+            os.Exit(1)
+        }
+
+      defer outfile.Close()
+
+    data := make([]byte, 64)
     for{
         n, err := infile.Read(data)
         if err == io.EOF{
             break
         }
-      text += string(data[:n])
+
+      text := string(data[:n])
+      outfile.WriteString(changeString(text))
     }
 
-    res := changeString(text)
-
-  outfile_name := strings.Split(file_name, ".")[0] + ".res"
-  //fmt.Println(outfile_name)
-
-  if _, err := os.Stat(outdir); os.IsNotExist(err) {
-    err = os.MkdirAll(outdir, 0755)
-    if err != nil {
-      log.Fatal(err)
-      c <- -1
-      os.Exit(1)
-    }
-  }
-
-  outfile, err := os.Create(outdir + "/" + outfile_name)
-  if err != nil{
-        log.Fatal(err)
-        c <- -1
-        os.Exit(1)
-    }
-
-  defer outfile.Close()
-
-  outfile.WriteString(res)
   c <- 1
 }
 
