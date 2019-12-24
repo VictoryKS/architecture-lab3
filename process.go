@@ -19,7 +19,7 @@ func changeString(instr string) string{
     re1 := regexp.MustCompile(`[a-zA-Z],$`)
     re2 := regexp.MustCompile(`^\s`)
 
-    if (re.FindString(str[i]) != "" || re1.FindString(str[i-1]) != "" && re2.FindString(str[i]) == ""){
+    if ((re.FindString(str[i]) != "" || re1.FindString(str[i-1]) != "") && re2.FindString(str[i]) == "") {
       new += " " + str[i]
     } else {
       new += str[i]
@@ -40,7 +40,6 @@ func changeFile(indir, outdir, file_name string, c chan int){
       defer infile.Close()
 
       outfile_name := strings.Split(file_name, ".")[0] + ".res"
-      //fmt.Println(outfile_name)
 
       if _, err := os.Stat(outdir); os.IsNotExist(err) {
         err = os.MkdirAll(outdir, 0755)
@@ -61,15 +60,33 @@ func changeFile(indir, outdir, file_name string, c chan int){
       defer outfile.Close()
 
     data := make([]byte, 64)
-    for{
+    var prevEnd byte
+    var text string
+    var prevLength int
+
+    for {
         n, err := infile.Read(data)
         if err == io.EOF{
-            break
+          text += string(data[prevLength - 1])
+          outfile.WriteString(changeString(text))
+          break
         }
 
-      text := string(data[:n])
-      outfile.WriteString(changeString(text))
+        if len(text) != 0 {
+          outfile.WriteString(changeString(text))
+        }
+
+        if prevEnd != 0 {
+          text = string(prevEnd) + string(data[:n - 1])
+        } else {
+          text = string(data[:n - 1])
+        }
+
+        prevLength = n
+        prevEnd = data[n - 1]
     }
+
+
 
   c <- 1
 }
